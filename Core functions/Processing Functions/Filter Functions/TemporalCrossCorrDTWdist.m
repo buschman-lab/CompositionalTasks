@@ -1,0 +1,22 @@
+% finds temporal croscorrelation between two matrixes
+%using dynamic time warping. reports dissimilarity 
+%
+function [D] = TemporalCrossCorrDTWdist(ZI,ZJ)
+global AnalysisData
+ SizeW=AnalysisData.SizeW;
+ZI=reshape(ZI,SizeW);
+
+for zj=1:size(ZJ,1)    
+    ZJ_ind=reshape(ZJ(zj,:),SizeW);
+    % take dtw of Zi and ZJ now
+    [dist,ix,iy]=dtw(ZI,ZJ_ind);
+    ZI_warp=ZI(:,ix);
+    ZJ_warp=ZJ_ind(:,iy);    
+    % calculte correlation
+    [ssr(zj)] = corr2(ZI_warp,ZJ_warp);
+    if (isnan(ssr(zj)) || isinf(ssr(zj)));ssr(zj)=0;end
+     
+end
+D=[1-ssr]';
+end
+

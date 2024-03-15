@@ -1,0 +1,19 @@
+function VarVal=GetValFromSubspaceResults(SubspaceAnaResults,SubspaceAnaOpts,VarName,AxBfieldName) % gets specified value from subspace analysis results matrix
+ 
+            nTrialRange=length(SubspaceAnaResults.TrialRange);
+            Nrep=length(SubspaceAnaResults.TrialRange(1).Rep);
+            if iscell(SubspaceAnaResults.TrialRange(1).Rep(1).([AxBfieldName]) )
+                % get X and Y X projdata
+                for nTrlRng=1:nTrialRange
+                    for rep=1:SubspaceAnaOpts.Nrep
+                        VarVal(:,:,rep,nTrlRng)=cell2mat(cellfun(@(x)  x.(VarName)(:),SubspaceAnaResults.TrialRange(nTrlRng).Rep(rep).([AxBfieldName]),'UniformOutput',0))';
+                    end
+                end
+            else
+                for nTrlRng=1:nTrialRange
+                    for rep=1:Nrep
+                        VarVal(:,:,rep,nTrlRng)= SubspaceAnaResults.TrialRange(nTrlRng).Rep(rep).([AxBfieldName]).(VarName);
+                    end
+                end
+            end
+end
