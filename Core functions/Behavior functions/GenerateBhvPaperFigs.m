@@ -44,15 +44,15 @@ switch AnalysisType
         varargout=cell(1,4);
         [varargout{1:4}]=bhvAna.PlotAvgPSM(BhvData.AllPSMPerf);
     case 'TrialPerformance'
-        varargout=cell(1,3);
-        [varargout{1:3}]=bhvAna.PlotTrlPerf(BhvData.AllTrlPerf,BhvData.AllTrlCount,BhvData.AllTrlCountDay,...
+        varargout=cell(1,2);
+        [varargout{1:2}]=bhvAna.PlotTrlPerf(BhvData.AllTrlPerf,BhvData.AllTrlCount,BhvData.AllTrlCountDay,...
             BhvData.NBlocksDay,BhvData.RewardPulse,BhvData.NCorrectTrl,BhvData.NumRewards,BhvData.AllSeqHist);
 end
-%%  save the figures we have generated in case
-FigSaveFileName=sprintf(['%s_%s'],AnalysisType,Animal);
-FigSavePath=[AnalysisOpts.ResultsSavePath AnalysisOpts.FS 'Behavior' AnalysisOpts.FS];
-if ~exist(FigSavePath,'file');mkdir(FigSavePath);end
-FigParams.SaveFigSeries(FigSaveFileName, FigSavePath,varargout,'SaveEachFrame',1,'enforce_daspect',1)
+% %%  save the figures we have generated in case
+% FigSaveFileName=sprintf(['%s_%s'],AnalysisType,Animal);
+% FigSavePath=[AnalysisOpts.ResultsSavePath AnalysisOpts.FS 'Behavior' AnalysisOpts.FS];
+% if ~exist(FigSavePath,'file');mkdir(FigSavePath);end
+% FigParams.SaveFigSeries(FigSaveFileName, FigSavePath,varargout,'SaveEachFrame',1,'enforce_daspect',1)
 end
 
 function FS=KickoffMyfunc(RunonCluster,DateNum)

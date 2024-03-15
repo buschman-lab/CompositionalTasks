@@ -287,7 +287,7 @@ classdef BhvAnalysisFuncs
                     figure(varargout{1})
                     h1{Rule}=subplot(3,2,(Rule-1)*2+1);hold on % first half
                     % fit the PSM and plot the fitted function
-                    %obj.FitPSM(ML,AllPSMPerf.Perf{Rule}(:,HighPerfInd),Col(Rule,:)); %QH commented
+                    obj.FitPSM(ML,AllPSMPerf.Perf{Rule}(:,HighPerfInd),Col(Rule,:)); 
                     heb1=obj.fp.PlotMeanStd(ML,AllPSMPerf.Perf{Rule}(:,HighPerfInd),[],[RuleFeatures{Rule} ' Morph Level'],'Performance(%)',Col(Rule,:),0,...
                         ['Rule' num2str(Rule)],'AxesGrid','off',PSMMethodTxt{:},'p_marker','.','p_marker_size',ErrBarMarkerSize,'p_line_width',ErrBarLineWidth,'IsthisAxisTime',0);     
                     %heb1=obj.fp.PlotMeanStd(ML,AllPSMPerf.Perf{Rule}(:,HighPerfInd),[],[RuleFeatures{Rule} ' Morph Level'],'Performance(%)',Col(Rule,:),0,...
@@ -298,7 +298,7 @@ classdef BhvAnalysisFuncs
                     ylim([0 1])
                     
                     h2{Rule}=subplot(3,2,(Rule-1)*2+2);hold on % second Half
-                    %obj.FitPSM(ML,AllPSMPerf.Perf{Rule}(:,LowPerfInd),Col(Rule,:)) ;    %QH commented               
+                    obj.FitPSM(ML,AllPSMPerf.Perf{Rule}(:,LowPerfInd),Col(Rule,:)) ;                
                     heb2=obj.fp.PlotMeanStd(ML,AllPSMPerf.Perf{Rule}(:,LowPerfInd),[],[RuleFeatures{Rule} ' Morph Level'],...
                         'Performance(%)',Col(Rule,:),0,['Rule' num2str(Rule)],'AxesGrid',...
                         'off','p_marker','.','p_marker_size',10,'p_line_style','none','IsthisAxisTime',0,PSMMethodTxt{:});
@@ -314,7 +314,7 @@ classdef BhvAnalysisFuncs
                     ThisMLPerf(:,:,1)=AllPSMPerf.Perf{Rule}(:,LowPerfInd);
                     ThisMLPerf(:,:,2)=AllPSMPerf.Perf{Rule}(:,HighPerfInd);
                     ThisMLPerf=mean(ThisMLPerf,3);
-                    %obj.FitPSM(ML,ThisMLPerf,Col(Rule,:)) ;    %QH commented                    
+                    obj.FitPSM(ML,ThisMLPerf,Col(Rule,:)) ;                     
                     hebc=obj.fp.PlotMeanStd(ML,ThisMLPerf,...
                         [],[RuleFeatures{Rule} 'Morph Level'],'Performance(%)',Col(Rule,:),0,['Rule' num2str(Rule)],...
                         'AxesGrid','off','p_marker','.','p_marker_size',10,'p_line_style','none','IsthisAxisTime',0,PSMMethodTxt{:});
@@ -330,27 +330,17 @@ classdef BhvAnalysisFuncs
                     ThisMLPerf(:,:,1)=AllPSMPerf.Perf{Rule}(:,LowPerfInd);
                     ThisMLPerf(:,:,2)=AllPSMPerf.Perf{Rule}(:,HighPerfInd);
                     ThisMLPerf=mean(ThisMLPerf,3);
-                    %obj.FitPSM(ML,ThisMLPerf,Col(Rule,:)) ;       %QH commented                 
+                    obj.FitPSM(ML,ThisMLPerf,Col(Rule,:)) ;                    
                     hebc=obj.fp.PlotMeanStd(ML,ThisMLPerf,...
                         [],[RuleFeatures{Rule} 'Morph Level'],'Performance(%)',Col(Rule,:),0,['Rule' num2str(Rule)],...
                         'AxesGrid','off','p_marker','.','p_marker_size',10,'p_line_style','none','IsthisAxisTime',0,PSMMethodTxt{:});
                     hebc.CapSize=0;
                     set(gca,'XTick',ML,'XTickLabel',{HighMorphLvl});axis square
                     set(gca,'YTick',YAxisTicks,'YTickLabel',YAxisTickLabels)
-                    ylim([0 1])
-                    
-                    % Plot Trial Count
-                    figure(varargout{4})
-                    subplot(3,2,(Rule-1)*2+1);hold on % first half
-                    obj.fp.PlotMeanStd(ML,AllPSMPerf.Count{Rule}(:,HighPerfInd),[],'Morph Level','Num Trls',Col(Rule,:),2,['Rule' num2str(Rule)],'AxesGrid','off','IsthisAxisTime',0,PSMMethodTxt{:});
-                    set(gca,'XTick',ML,'XTickLabel',{HighMorphLvl});axis square
-                    subplot(3,2,(Rule-1)*2+2);hold on % second half
-                    obj.fp.PlotMeanStd(ML,AllPSMPerf.Count{Rule}(:,LowPerfInd),[],'Morph Level','Num Trls',Col(Rule,:),2,['Rule' num2str(Rule)],'AxesGrid','off','IsthisAxisTime',0,PSMMethodTxt{:});
-                    set(gca,'XTick',ML,'XTickLabel',{LowMorphLvl});axis square
+                    ylim([0 1])                    
                 end
             end
-          %  cellfun(@(x) obj.AddPerfThr2Axis(0.7,'k',x),h1);cellfun(@(x) obj.AddPerfThr2Axis(0.7,'k',x),h2);
-            
+             
         end
         function varargout = PlotAvgPSMCongInCong(obj,IndSamp,AllPSMPerf) % plots average PSM and fits it
             CongInCong = obj.CalCongIncongPSM(IndSamp);
@@ -486,7 +476,7 @@ classdef BhvAnalysisFuncs
             % specs for point stat test trials(only for from switch) 
             PointStatTestTrials=[1:20]; % this will include the first 30 trials trials 1:15 and trials 16:30
                       
-            varargout=obj.fp.RenderFigure(3,[]);            
+            varargout=obj.fp.RenderFigure(2,[]);            
             for S=[-1 0 1]                
                 figure(varargout{double(S>-1)+1})
                 SeqHist=S;
@@ -544,14 +534,7 @@ classdef BhvAnalysisFuncs
                             [X,P]=obj.ManData.DifferentiateSigClusters2(StatTest.FromSwitch);
                             obj.fp.plot_significance_level(X,P,1:LengthRule(Rule),[0 1.05 0.05],PickCol{nSeq}(Rule),[],0,...
                                 'SmoothingMethod','','WidthSmoothing',obj.NavgPerf,'IsthisAxisTime',0);
-                        end
-                        %  [clusters, ~, ~, ~,statsummery]=obj.PerformClusterCorrected_tTest(ThisRulePerfFromSwitch{nSeq}{Rule}', Stat_Seq{nSeq}(Rule,ThisRulePerfFromSwitch), false,[], [], [], []);
-%                         try
-%                             obj.fp.plot_significance_level(clusters,statsummery,1:LengthRule(Rule),[0 1.05 0.05],PickCol{nSeq}(Rule),[],0,...
-%                                 'SmoothingMethod','movmean','WidthSmoothing',obj.NavgPerf,'IsthisAxisTime',0);
-%                         catch me
-%                             disp(me.message)
-%                         end
+                        end                      
                         obj.fp.FormatAxes(gca,'daspect',[2*75 1 1])  
                     end
                     
@@ -621,78 +604,7 @@ classdef BhvAnalysisFuncs
                 end
                 grid off
             end
-            %% print out all of the results for point statistical test
-            for Rule=1:3
-                for TrlDir={'FromSwitch'}
-                    for BlkTyp={'AllTrls','BlockSeq'}
-                        if strcmp(BlkTyp{1},'BlockSeq')
-                            TrialNum2look=[PointStatTestTrials(1) PointStatTestTrials(end)];
-                            Perf1=StatTestPoint.FromSwitch.BlockSeq_P1(Rule);
-                            Perf2=StatTestPoint.FromSwitch.BlockSeq_P2(Rule);
-                        else
-                            TrialNum2look=[AllTrlPerf.NavgPerf LengthRule(Rule)+AllTrlPerf.NavgPerf];
-                            Perf1=StatTestPoint.FromSwitch.AllTrls_P1(Rule);
-                            Perf2=StatTestPoint.FromSwitch.AllTrls_P2(Rule);
-                        end
-                        if ~(strcmp(TrlDir{1},'ToSwitch') & strcmp(BlkTyp{1},'BlockSeq'))
-                            fprintf(2,'\nPoint Chi2 pval Trls %i -> %i Perf:%0.2f -> %0.2f Delta=%0.2f for Rule %i %s %s is %0.4f',...
-                                TrialNum2look(1),TrialNum2look(2),Perf1,Perf2,(Perf2-Perf1)*100,...
-                                Rule,TrlDir{1},BlkTyp{1}, StatTestPoint.(TrlDir{1}).(BlkTyp{1})(Rule));
-                        end
-                    end
-                end
-            end
-            %% plot total number of attempted trails
-            figure(varargout{3})
-            Col=RuleCol;
-            subplot(321) % plot number of trials for rules
-            hold on
-            for Rule=1:3
-                plot(Rule*ones(1,length(AllTrlCount{Rule})),AllTrlCount{Rule},'.','color',Col(Rule,:),'MarkerSize',20)
-                plot(Rule,mean(AllTrlCount{Rule}),'*','color',Col(Rule,:),'MarkerSize',20);
-                obj.fp.PlotMeanStd(Rule,AllTrlCount{Rule}',[],'Rule','Num Attempted Trls',Col(Rule,:),0,[]);
-            end
-            xlim([0 4])
-            ylim([0 800])
-            title('Number of trials per rule across days')
-         
-            %% plot total number of trials across days
-            subplot(322)
-            bar(1:length(AllTrlCountDay),AllTrlCountDay,'FaceColor','r')
-            text(1:length(AllTrlCountDay),AllTrlCountDay+50,[arrayfun(@num2str,RewardPulse,'UniformOutput',0)]);
-            text(1:length(AllTrlCountDay),AllTrlCountDay+70,[arrayfun(@num2str,NumRewards.Switch,'UniformOutput',0)] )
-            xlabel('Day #')
-            ylabel('# attempted trials')
-            title('Total Number of trials across days')
-         
-            %% Plot number of blocks per rule per day
-            subplot(323)
-            hold on
-            arrayfun(@(x) bar(NBlocksDay(:,x),'FaceColor','none','EdgeColor',Col(x,:),'BarWidth',0.5),1:3);
-            legend({'R1','R2','R3'})
-            xlabel('Day #')
-            ylabel('# finished blks')
-            title('Number of Finished Blks across days')
             
-            %% plot average number of blocks over dats for rules
-            subplot(324)
-            hold on
-            arrayfun(@(x) bar(x,mean(NBlocksDay(:,x),1),'FaceColor','none','EdgeColor',Col(x,:),'BarWidth',0.5),1:3);
-            arrayfun(@(x) errorbar(x,mean(NBlocksDay(:,x),1),std(NBlocksDay(:,x))/sqrt(length(NBlocksDay(:,x))),'color',Col(x,:)),1:3);
-            legend({'R1','R2','R3'})
-            ylabel('avg # finished blks')
-            title('Avg Number of Finished Blks/Rule')
-         
-            %% plot correction of reward pulse to tot num trials and tot correct trils
-            subplot(325)
-            hold on
-            plot(RewardPulse,NCorrectTrl,'r.','Markersize',5);
-            plot(RewardPulse,AllTrlCountDay,'b.','Markersize',5);
-            [a_corct,p_corct]=corr(RewardPulse',NCorrectTrl');
-            [a_tot,p_tot]=corr(RewardPulse',AllTrlCountDay');
-            title(['Corct:' num2str(a_corct,3) ',' num2str(p_corct,3) ' Tot:' num2str(a_tot,3) ',' num2str(p_tot,3)])
-            legend({'rwdVScorr','rwdVStot'},'Location','best')
-           
             
         end
         function varargout = PlotSampInfo(obj,IndSamp)
