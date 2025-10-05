@@ -1,0 +1,78 @@
+function [OutVar,SaveFileName,SaveVarName]=FitStatMetric2Data(Lag,Metric,AvgDim2,NStg,NStgTxt,SaveFileName,Observed,Shuffle)
+% fits statistical test metic to data
+% AvgDim2 are we averaging across Dim 2 dimension?
+% Lag Number of lags for ARIMA
+% Metric we care about could be CPI ShapeDist or ColorDist
+
+global AnalysisOpts
+
+ManData=ManipulateData;
+TrlRng=[1:size(Observed,1)]';
+NTim=size(Observed,2);
+%SubVar=@(x,y) eval(sprintf('%s.(''%s'')=%s;',x,y,y));
+% SubVar =@(x,y) eval(sprintf('%s=struct(''%s'',%s)',x,y,y));
+% SubVarRev=@(x,y) eval(sprintf('%s=OutVar.%s.(''%s'');',x,y,y));
+
+if AvgDim2;Ext='AvgDim2';else;Ext='';end
+SaveVarName=[Metric '_Lag'  num2str(Lag) Ext];
+
+% check if we have this data aleady
+if ManData.IsVarExistinFile([AnalysisOpts.CodeTestDataPath SaveFileName '.mat'],SaveVarName)
+    OutVar=load([AnalysisOpts.CodeTestDataPath SaveFileName],SaveVarName);    
+    fprintf('\nLoading stat fit  %s in file %s ...',SaveVarName,SaveFileName)
+    return
+end
+
+switch Metric
+    case 'ARIMA'
+        model = arima('ARLags', Lag, 'D', 0, 'Constant', 0); % AR(Lag) model
+        % fit observed
+        [Observed_a,Observed_p]= (arrayfun(@(x) ARIMAtrendcorr(Observed(1:NStg,x),TrlRng,model,'Spearman'),1:NTim,'UniformOutput',0));
+        % fit shuffle
+        for i=1:size(Shuffle,3)
+            fprintf('\n Cal ArShuff %i',i);
+            tic
+            [Shuffle_a(:,:,i),Shuffle_p(:,:,i)]= (arrayfun(@(x) ARIMAtrendcorr(squeeze(Shuffle(i,1:NStg,x)),TrlRng,model,'Spearman'),1:NTim,'UniformOutput',0));
+            toc
+        end
+        Observed_a=cell2mat(Observed_a);Observed_p=cell2mat(Observed_p);
+        Shuffle_a=cell2mat(Shuffle_a);Shuffle_p=cell2mat(Shuffle_p);
+
+
+    case {'3PW_p','PW_p','TFPW_Y_p'}
+         if strcmp(Metric,'3PW_p')
+            PW_method='3PW';
+        elseif strcmp(Metric,'PW_p')
+            PW_method='PW';
+        elseif strcmp(Metric,'TFPW_Y_p')
+            PW_method='TFPW_Y';
+         end
+         NStg=TrlRng(end);
+        test_data=timetable(datetime(datevec([datenum([2001 01 01]):365:datenum([2000+NStg 01 01])])));
+         % calculate observed
+        for t=1:NTim
+            test_data.param=Observed(1:NStg,t);
+            results=MK_tempAggr(test_data, 0.001, 'PW_method',PW_method,'alpha_MK',99,'alpha_ak',95, 'alpha_CL',95, 'alpha_Xhomo',99);
+            Observed_p(1,t)=results.P;
+            Observed_a(1,t)=results.slope;
+        end
+         % calculate observed shuffle
+        for rep=1:NrepShuff
+            fprintf('\n Cl %s for rep %i',Metric,rep)
+            for t=1:NTim
+                test_data.param=squeeze(Shuffle(rep,1:NStg,t))';
+                results=MK_tempAggr(test_data, 0.001, 'PW_method',PW_method,'alpha_MK',99,'alpha_ak',95, 'alpha_CL',95, 'alpha_Xhomo',90);
+                Shuffle_p(rep,t)=results.P;
+                Shuffle_a(rep,t)=results.slope;
+            end
+        end
+end
+% save this fit 
+eval(sprintf('%s=struct(''%s'',%s,''%s'',%s,''%s'',%s,''%s'',%s)',SaveVarName,'Observed_a','Observed_a',...
+    'Observed_p','Observed_p','Shuffle_a','Shuffle_a','Shuffle_p','Shuffle_p'));
+eval(sprintf('OutVar.(''%s'')=%s',SaveVarName,SaveVarName));
+
+fprintf('\nSaving stat fit  %s in file %s ...',SaveVarName,SaveFileName)
+save([AnalysisOpts.CodeTestDataPath SaveFileName],SaveVarName,'-append');
+
+end

@@ -1,0 +1,118 @@
+function [angd,angd_WithinRule]=CalAngleWithTDR(GLMWeightsAll,WidthSmoothingGLM,PCexPercent,WantedFieldName,TimeGLM,TimeLook4Max,RuleFactors,D,explained)
+
+global AnalysisOpts
+
+SM=@(x,dim,k) smoothdata(x,dim,"movmean",k);
+NWantedFactors=length(WantedFieldName);
+ManData=ManipulateData;
+%% smooth GLM fit data 
+GLMWeightsAll=structfun(@(x) SM(x,1,WidthSmoothingGLM),GLMWeightsAll,'UniformOutput',0);
+
+%% Do PCA on Neural data to smooth the data 
+if strcmp(PCexPercent,'all')
+    UsePCdenoising=0;
+    nPC=AnalysisOpts.NNeuAnalysis;
+else
+    UsePCdenoising=1;
+    nPC=find(cumsum(explained)>=PCexPercent,1,"first");
+end
+
+Ddenoise=D;Ddenoise(:,nPC+1:end)=0;
+
+%% find the Max norm for betas
+TimeLimMaxColShape=find(ManData.GetExatTimeAxis(TimeGLM,TimeLook4Max));
+TimeLimMax=repmat({1:length(TimeGLM)},[1 NWantedFactors]);
+TimeLimMax(contains(WantedFieldName,'Shape') | contains(WantedFieldName,'Color'))={TimeLimMaxColShape};
+% define params
+FactorNames={'Color','Shape','Axis','Rule'};
+RuleCombs=[1 2;1 3;2 3];
+nrep=size(GLMWeightsAll.Reward,3);
+if nrep>2
+WithinRuleReSample=cell2mat(arrayfun(@(x) randsample(1:nrep,2)',1:nrep,'UniformOutput',0))';
+
+for rep=1:nrep
+    GLMWeightsPCA=cellfun(@(x) [Ddenoise'*GLMWeightsAll.(x)(:,:,rep)']',WantedFieldName,'UniformOutput',0);
+
+    if UsePCdenoising
+        GLMWeightsNorm=cellfun(@(x) ManData.CalNormVectMatrix(x,2),GLMWeightsPCA,'UniformOutput',0);
+        [~,MaxTimeNorm]=arrayfun(@(x) max(GLMWeightsNorm{x}(TimeLimMax{x})),1:NWantedFactors);
+        MaxTimeNorm=arrayfun(@(x) MaxTimeNorm(x)+(TimeLimMax{x}(1)-1),1:NWantedFactors);
+        WeightsMaxNorm=cell2mat(arrayfun(@(x) GLMWeightsPCA{x}(MaxTimeNorm(x),:)',1:NWantedFactors,'UniformOutput',0));
+    else
+        GLMWeightsNorm=cellfun(@(x) ManData.CalNormVectMatrix(GLMWeightsAll.(x),2),WantedFieldName,'UniformOutput',0);
+        [~,MaxTimeNorm]=arrayfun(@(x) max(GLMWeightsNorm{x}(TimeLimMax{x})),1:NWantedFactors);
+        MaxTimeNorm=arrayfun(@(x) MaxTimeNorm(x)+(TimeLimMax{x}(1)-1),1:NWantedFactors);
+        WeightsMaxNorm=cell2mat(arrayfun(@(x) GLMWeightsAll.(WantedFieldName{x})(MaxTimeNorm(x),:)',1:NWantedFactors,'UniformOutput',0));
+    end
+
+    %% Do the QR decomposition for each rule seperately
+    for Rule=1:3
+        TDRfactorInds{Rule}=cellfun(@(x) find(strcmp(WantedFieldName,x)),RuleFactors{Rule});
+        [Q{Rule},R{Rule}]=qr(WeightsMaxNorm(:,TDRfactorInds{Rule}));
+        TaskAxis{Rule}=Q{Rule}(:,1:length(TDRfactorInds{Rule})); % first colums that have orthogonizlied task axis
+    end
+
+    for x=1:4
+        IndFact=x;
+        [angd(x,:,rep)]=arrayfun(@(x) ManData.GetAngleBetVectors(Q{RuleCombs(x,1)}(:,IndFact),Q{RuleCombs(x,2)}(:,IndFact)),1:3);
+    end
+end
+
+% do within rule comparision as well
+for rep=1:nrep   
+    rep1=WithinRuleReSample(rep,1);rep2=WithinRuleReSample(rep,2);
+
+    GLMWeightsPCA1=cellfun(@(x) [Ddenoise'*GLMWeightsAll.(x)(:,:,rep1)']',WantedFieldName,'UniformOutput',0);
+    GLMWeightsPCA2=cellfun(@(x) [Ddenoise'*GLMWeightsAll.(x)(:,:,rep2)']',WantedFieldName,'UniformOutput',0);
+
+    if UsePCdenoising
+        GLMWeightsNorm1=cellfun(@(x) ManData.CalNormVectMatrix(x,2),GLMWeightsPCA1,'UniformOutput',0);
+        [~,MaxTimeNorm1]=arrayfun(@(x) max(GLMWeightsNorm1{x}(TimeLimMax{x})),1:NWantedFactors);
+        MaxTimeNorm1=arrayfun(@(x) MaxTimeNorm1(x)+(TimeLimMax{x}(1)-1),1:NWantedFactors);
+        WeightsMaxNorm1=cell2mat(arrayfun(@(x) GLMWeightsPCA1{x}(MaxTimeNorm1(x),:)',1:NWantedFactors,'UniformOutput',0));
+ 
+        GLMWeightsNorm2=cellfun(@(x) ManData.CalNormVectMatrix(x,2),GLMWeightsPCA2,'UniformOutput',0);
+        [~,MaxTimeNorm2]=arrayfun(@(x) max(GLMWeightsNorm2{x}(TimeLimMax{x})),1:NWantedFactors);
+        MaxTimeNorm2=arrayfun(@(x) MaxTimeNorm2(x)+(TimeLimMax{x}(1)-1),1:NWantedFactors);
+        WeightsMaxNorm2=cell2mat(arrayfun(@(x) GLMWeightsPCA2{x}(MaxTimeNorm2(x),:)',1:NWantedFactors,'UniformOutput',0));
+    else
+        GLMWeightsNorm=cellfun(@(x) ManData.CalNormVectMatrix(GLMWeightsAll.(x),2),WantedFieldName,'UniformOutput',0);
+        [~,MaxTimeNorm]=arrayfun(@(x) max(GLMWeightsNorm{x}(TimeLimMax{x})),1:NWantedFactors);
+        MaxTimeNorm=arrayfun(@(x) MaxTimeNorm(x)+(TimeLimMax{x}(1)-1),1:NWantedFactors);
+        WeightsMaxNorm=cell2mat(arrayfun(@(x) GLMWeightsAll.(WantedFieldName{x})(MaxTimeNorm(x),:)',1:NWantedFactors,'UniformOutput',0));
+    end
+
+    %% Do the QR decomposition for each rule seperately
+    for Rule=1:3
+        TDRfactorInds{Rule}=cellfun(@(x) find(strcmp(WantedFieldName,x)),RuleFactors{Rule});
+        [Q1{Rule},R1{Rule}]=qr(WeightsMaxNorm1(:,TDRfactorInds{Rule}));
+        TaskAxis1{Rule}=Q1{Rule}(:,1:length(TDRfactorInds{Rule})); % first colums that have orthogonizlied task axis
+       
+        [Q2{Rule},R2{Rule}]=qr(WeightsMaxNorm2(:,TDRfactorInds{Rule}));
+        TaskAxis2{Rule}=Q2{Rule}(:,1:length(TDRfactorInds{Rule})); % first colums that have orthogonizlied task axis
+    end
+
+    for x=1:4
+        IndFact=x;
+        [angd_WithinRule(x,:,rep)]=arrayfun(@(x) ManData.GetAngleBetVectors(Q1{x}(:,IndFact),Q2{x}(:,IndFact)),1:3);
+    end
+end
+
+% plot results
+% fp=fig_params;
+% h1=fp.RenderFigure(1,[]);
+% ColorPallet=AnalysisOpts.ColorPalettCamden;
+% 
+% [h1,Sp]=fp.RenderSubplots([],[],h1{1},4);
+% GroupsAxisY={[1 2 3],[5,6,7],[8:10],[11:13]}; % groups of factors to plot together
+% GroupsAxisYY={[1 3],[5]}; % groups of factors to plot together
+% 
+% hold on
+% arrayfun(@(s) arrayfun(@(y) fp.PlotMeanStd(TimeGLM,GLMWeightsNorm2{y},[],['Time'],'Value',ColorPallet(y,:), ...
+%     1,WantedFieldName{y},'LegendTxt',WantedFieldName{y},'Sp',Sp(s)),GroupsAxisY{s},'UniformOutput',0),1:4,'UniformOutput',0);
+% 
+% % add a star for the maximum value 
+% arrayfun(@(s) arrayfun(@(y) fp.Text(TimeGLM(MaxTimeNorm2(y)),GLMWeightsNorm2{y}(MaxTimeNorm2(y)),'*',ColorPallet(y,:),'font_size',15,'Sp', ...
+%     Sp(s)),GroupsAxisY{s},'UniformOutput',0),1:4,'UniformOutput',0);
+
+end
