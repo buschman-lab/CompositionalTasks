@@ -17,14 +17,14 @@ SetAnalysisOptions_RuleRepresentation(); % set all of the parameters
 % Setup the class to plot the data
 FigParams=fig_params;
 bhvAna=BhvAnalysisFuncs;
-opengl software
-set(gcf, 'Renderer', 'opengl');   % good for static plots
+% opengl software
+% set(gcf, 'Renderer', 'opengl');   % good for static plots
 
 
 %% Figure 4a 
 FigSaveFileName='Fig4a';
 % load data 
-load([DataPath 'DataFig1f.mat']);
+load([DataPath 'BhvData.mat']);
 % generate figure
 varargout=cell(3);
 [varargout{1:3}]=bhvAna.PlotTrlPerf(AllTrlPerf,AllTrlCount,AllTrlCountDay,NBlocksDay,RewardPulse,NCorrectTrl,NumRewards,AllSeqHist);
@@ -44,17 +44,15 @@ FigParams.SaveFigSeries(FigSaveFileName, FigSavePath,[h1 h2],'SaveEachFrame',1,'
 %PopulationAnalysisTemp(0, 0, [], 1, 'Learning3D_RuleR2SeqAnalysisLearningCtrlR2','ProcessingStep',4,'DividSpockClassifier_Cond',1,'DividSpockClassifier_TrlRng',[1 1],'CalShuffTrlOrderClassifier',0)
 %PopulationAnalysisTemp(0, 0, [], 1, 'Learning3D_RuleR2SeqAnalysisLearningCtrl','ProcessingStep',4,'DividSpockClassifier_Cond',1,'DividSpockClassifier_TrlRng',[1 1],'CalShuffTrlOrderClassifier',0)
 
-%% figure 4c-l
+%% figure 4c,f,i
 h1=PlotClassifierLearningResults('Fig4c',DataPath);
-h2=PlotClassifierLearningResults('Fig4d',DataPath);
-h3=PlotClassifierLearningResults('Fig4f',DataPath);
-h4=PlotClassifierLearningResults('Fig4g',DataPath);
-h6=PlotClassifierLearningResults('Fig4i',DataPath);
-h7=PlotClassifierLearningResults('Fig4j',DataPath);
-h8=PlotClassifierLearningResults('Fig4l',DataPath);
+h2=PlotClassifierLearningResults('Fig4f',DataPath);
+h3=PlotClassifierLearningResults('Fig4i',DataPath);
+
+FigParams.SaveFigSeries(FigSaveFileName, FigSavePath,[h1 h2 h3],'SaveEachFrame',1,'enforce_daspect',1)
 
 %% Figure 4h 
-FigSaveFileName='Fig5f';
+FigSaveFileName='Fig4h';
 
 % generate figure
 varargout=cell(1);
@@ -85,10 +83,11 @@ else
     end
 end
 
+AnalysisOpts.FS=FS;
 % add core function path first so we can sturt up everything
-addpath(genpath([RootPath 'Projects' FS 'Rule_Representation' FS 'ElecPhys_Analysis' FS 'Rule Representation Project',...
-    FS 'Submission Code' FS 'Final Code for Nature Paper 2025 Tafazoli et al' FS 'Core functions' FS]));
-SetupAllVars(DateNum)  %% set up the path and initialize vars
+% addpath(genpath([RootPath 'Projects' FS 'Rule_Representation' FS 'ElecPhys_Analysis' FS 'Rule Representation Project',...
+%     FS 'Submission Code' FS 'Final Code for Nature Paper 2025 Tafazoli et al' FS 'Core functions' FS]));
+% SetupAllVars(DateNum)  %% set up the path and initialize vars
 
 end
 

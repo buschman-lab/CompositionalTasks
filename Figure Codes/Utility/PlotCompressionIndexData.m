@@ -12,7 +12,7 @@ for Rule=1:3
     Col=AnalysisOpts.RuleColors(Rule,:);
     ScoresMetric=CompressionEncoding{Rule}.TrlAvg.All;
 
-    FigParams.PlotMeanStd(AnalysisOpts.Time,log(ScoresMetric),[],'Time relative to stimulus onset (s)',...
+    FigParams.PlotMeanStd(-0.6:0.01:0.55,log(ScoresMetric),[],'Time relative to stimulus onset (s)',...
         [],Col,1,[],'Sp',Sp,'AppendTitles',1,'WidthSmoothing',15,'SmoothingMethod','movmean');  
 
     Ylbl=['Compression Index'];

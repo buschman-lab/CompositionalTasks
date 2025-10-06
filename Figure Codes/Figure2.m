@@ -17,8 +17,8 @@ SetAnalysisOptions_RuleRepresentation(); % set all of the parameters
 % Setup the class to plot the data
 FigParams=fig_params;
 bhvAna=BhvAnalysisFuncs;
-opengl software
-set(gcf, 'Renderer', 'opengl');   % good for static plots
+% opengl software
+% set(gcf, 'Renderer', 'opengl');   % good for static plots
 
 %% Figure 2a,b,c,e,f,h,i 
 FigSaveFileName={'Fig2a','Fig2c','Fig2f','Fig2i'};
@@ -61,10 +61,12 @@ else
     end
 end
 
-% add core function path first so we can sturt up everything
-addpath(genpath([RootPath 'Projects' FS 'Rule_Representation' FS 'ElecPhys_Analysis' FS 'Rule Representation Project',...
-    FS 'Submission Code' FS 'Final Code for Nature Paper 2025 Tafazoli et al' FS 'Core functions' FS]));
-SetupAllVars(DateNum)  %% set up the path and initialize vars
+AnalysisOpts.FS=FS;
+% 
+% % add core function path first so we can sturt up everything
+% addpath(genpath([RootPath 'Projects' FS 'Rule_Representation' FS 'ElecPhys_Analysis' FS 'Rule Representation Project',...
+%     FS 'Submission Code' FS 'Final Code for Nature Paper 2025 Tafazoli et al' FS 'Core functions' FS]));
+% SetupAllVars(DateNum)  %% set up the path and initialize vars
 
 end
 
