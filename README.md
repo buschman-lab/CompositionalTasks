@@ -8,11 +8,9 @@ The Signal processing toolbox, Optimization Toolbox and Curvefitting toolbox are
 
 # Installation Guide
 
-1) Download all required data from https://figshare.com/projects/Building_compositional_tasks_with_shared_neural_subspaces/243491.
-2) Copy the data to .\Figure Data\ Folder
-3) Set the DataPath in GenerateAllTafazolietal2025Figures.m to the downloaded dataset path.
-4) Add all of the folders to your current path.
-
+1) Download all required data from **https://figshare.com/projects/Building_compositional_tasks_with_shared_neural_subspaces/243491**.
+2) Copy the data to **rootpath\Figure Data\** Folder
+3) Set the DataPath in **GenerateAllTafazolietal2025Figures.m** to the downloaded dataset path and include all subfolders.
 
 # Demo file 
 
